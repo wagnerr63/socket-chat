@@ -15,16 +15,17 @@ public class Client {
 
             Scanner input = new Scanner(socket.getInputStream());
             PrintStream output = new PrintStream(socket.getOutputStream());
-            BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
+            Scanner keyboard = new Scanner(System.in);
 
             String userName = getUserName(keyboard);
+
             output.println(userName);
 
             Thread threadReceiver = new Thread(() -> receiveMessages(input));
             threadReceiver.start();
 
             while (true) {
-                String message = keyboard.readLine();
+                String message = keyboard.nextLine();
                 output.println(message);
                 if (message.equals("/sair")) {
                     break;
@@ -40,9 +41,9 @@ public class Client {
         }
     }
 
-    private static String getUserName(BufferedReader teclado) throws IOException {
+    private static String getUserName(Scanner keyboard) throws IOException {
         System.out.print("Digite seu nome de usuário: ");
-        return teclado.readLine();
+        return keyboard.nextLine();
     }
 
     private static void receiveMessages(Scanner input) {

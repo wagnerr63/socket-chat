@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class Server extends Thread {
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        System.out.println("Servidor iniciado.\n Aguardando conexões.\n");
+        System.out.println("Servidor iniciado. \nAguardando conexões.\n");
 
         try {
             while (true) {
@@ -42,16 +41,22 @@ public class Server extends Thread {
     public void run() {
         try {
             Scanner clientOutput = new Scanner(clientSocket.getInputStream());
-            PrintStream saidaCliente = new PrintStream(clientSocket.getOutputStream());
+            PrintStream clientInput = new PrintStream(clientSocket.getOutputStream());
+
+            String username = clientOutput.nextLine();
+            clients.put(username, clientSocket);
+            System.out.println("Cliente adicionado: " + username);
 
             while (true) {
                 String clientMessage = clientOutput.nextLine();
                 if (clientMessage.startsWith("/send")) {
                     processMessage(clientMessage);
                 } else if (clientMessage.equals("/users")) {
-                    listClients(saidaCliente);
+                    listClients(clientInput);
                 } else if (clientMessage.equals("/sair")) {
+                    clients.remove(username);
                     clientSocket.close();
+                    System.out.println("Cliente desconectado: " + username);
                     break;
                 }
             }
@@ -67,8 +72,11 @@ public class Server extends Thread {
 
     }
 
-    private void listClients(PrintStream receiver) throws IOException {
-        
+    private void listClients(PrintStream clientInput) throws IOException {
+        clientInput.println("Clientes conectados:");
+        for (String client : clients.keySet()) {
+            clientInput.println(client);
+        }
     }
 
     private void sendMessage(Socket receiver, String message) throws IOException {
