@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -103,6 +105,21 @@ public class Server extends Thread {
     }
 
     private static void logConnection(String adrressIP) throws IOException {
-        
+        var filePath = "logs.txt";
+        try{
+            File file = new File(filePath);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            FileWriter writer = new FileWriter(filePath, true);
+
+            writer.write("IP:"+adrressIP+",Date:"+ Instant.now().toString()  +"\n");
+
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao salvar o log: " + adrressIP);
+        }
+
     }
 }
