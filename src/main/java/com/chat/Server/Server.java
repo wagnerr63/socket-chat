@@ -72,9 +72,18 @@ public class Server extends Thread {
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(senderMessage);
         matcher.find();
-        String command = matcher.group(1);
-        String receiver = matcher.group(2);
-        String message = matcher.group(3);
+
+        String command, receiver, message;
+
+        try {
+            command = matcher.group(1);
+            receiver = matcher.group(2);
+            message = matcher.group(3);
+        }catch ( Exception e ) {
+            sendMessage(clients.get(sender), "Comando inválido");
+            return;
+        }
+
 
         if (!clients.containsKey(receiver)) {
             System.out.println("Destinatário não encontrado: " + receiver);
