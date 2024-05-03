@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,6 +82,11 @@ public class Server extends Thread {
             message = matcher.group(3);
         }catch ( Exception e ) {
             sendMessage(clients.get(sender), "Comando inválido");
+            return;
+        }
+
+        if (Objects.equals(receiver, sender)) {
+            sendMessage(clients.get(sender), "Não é possível enviar mensagem para si próprio.");
             return;
         }
 
