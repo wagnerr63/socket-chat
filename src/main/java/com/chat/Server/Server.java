@@ -100,8 +100,30 @@ public class Server extends Thread {
         output.println(message);
     }
 
-    private void sendFile(Socket receiver, String message, PrintStream clientInput) throws IOException {
-      
+    private void sendFile(Socket receiver, String message, PrintStream clientInput)
+    {
+        clientInput.println("/file " + message);
+
+        try
+        {
+            PrintWriter output = new PrintWriter(receiver.getOutputStream(), true);
+            output.println("/receive " + message);
+
+            for (int i = 0; i < 5; i++)
+            {
+                Thread.sleep(1000);
+                if(clientSocket.getInputStream().available() > 0){
+                    clientSocket.getInputStream().transferTo(receiver.getOutputStream());
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void logConnection(String adrressIP) throws IOException {
