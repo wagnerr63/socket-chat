@@ -78,6 +78,7 @@ public class Server extends Thread {
 
         if (!clients.containsKey(receiver)) {
             System.out.println("Destinatário não encontrado: " + receiver);
+            sendMessage(clients.get(sender), "Destinatário "+receiver+" não encontrado.");
             return;
         }
 
