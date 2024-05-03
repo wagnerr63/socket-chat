@@ -47,7 +47,8 @@ public class Client {
             keyboard.close();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println("Erro ao conectar ao servidor. Tente novamente.");
         }
     }
 
