@@ -5,10 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Server extends Thread {
 
@@ -50,7 +53,7 @@ public class Server extends Thread {
             while (true) {
                 String clientMessage = clientOutput.nextLine();
                 if (clientMessage.startsWith("/send")) {
-                    processMessage(clientMessage);
+                    processMessage(clientMessage, username, clientInput);
                 } else if (clientMessage.equals("/users")) {
                     listClients(clientInput);
                 } else if (clientMessage.equals("/sair")) {
@@ -65,11 +68,26 @@ public class Server extends Thread {
         }
     }
 
-    private void processMessage(String senderMessage) throws IOException {
-        String[] parts = senderMessage.split(" ");
-        String command = parts[0];
-        String receiver = parts[2];
+    private void processMessage(String senderMessage, String sender, PrintStream clientInput) throws IOException {
+        String PATTERN = "/send\\s+(message|file)\\s+(\\w+)\\s+(.*)";
+    
+        Pattern pattern = Pattern.compile(PATTERN);
+        Matcher matcher = pattern.matcher(senderMessage);
+        matcher.find();
+        String command = matcher.group(1);
+        String receiver = matcher.group(2);
+        String message = matcher.group(3);
 
+        if (!clients.containsKey(receiver)) {
+            System.out.println("Destinatário não encontrado: " + receiver);
+            return;
+        }
+
+        if (command.equals("message")) {
+            sendMessage(clients.get(receiver), sender + ": " + message);
+        } else if (command.equals("file")) {
+            sendFile(clients.get(receiver), message, clientInput);
+        }
     }
 
     private void listClients(PrintStream clientInput) throws IOException {
@@ -80,11 +98,14 @@ public class Server extends Thread {
     }
 
     private void sendMessage(Socket receiver, String message) throws IOException {
-        
+        PrintWriter output = new PrintWriter(receiver.getOutputStream(), true);
+        output.println(message);
     }
 
-    private void sendFile(Socket destinatario, String caminhoArquivo) throws IOException {
-        
+    private void sendFile(Socket receiver, String message, PrintStream clientInput) throws IOException {
+        PrintStream output = new PrintStream(receiver.getOutputStream(), true);
+        output.println("FILE");
+        output.println(message);
     }
 
     private static void logConnection(String adrressIP) throws IOException {
