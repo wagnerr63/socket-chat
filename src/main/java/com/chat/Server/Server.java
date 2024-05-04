@@ -3,12 +3,10 @@ package com.chat.Server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,12 +72,27 @@ public class Server extends Thread {
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(senderMessage);
         matcher.find();
-        String command = matcher.group(1);
-        String receiver = matcher.group(2);
-        String message = matcher.group(3);
+
+        String command, receiver, message;
+
+        try {
+            command = matcher.group(1);
+            receiver = matcher.group(2);
+            message = matcher.group(3);
+        }catch ( Exception e ) {
+            sendMessage(clients.get(sender), "Comando inválido");
+            return;
+        }
+
+        if (Objects.equals(receiver, sender)) {
+            sendMessage(clients.get(sender), "Não é possível enviar mensagem para si próprio.");
+            return;
+        }
+
 
         if (!clients.containsKey(receiver)) {
             System.out.println("Destinatário não encontrado: " + receiver);
+            sendMessage(clients.get(sender), "Destinatário "+receiver+" não encontrado.");
             return;
         }
 
@@ -104,11 +117,25 @@ public class Server extends Thread {
 
     private void sendFile(Socket receiver, String message, PrintStream clientInput) throws IOException {
         PrintStream output = new PrintStream(receiver.getOutputStream(), true);
-        output.println("FILE");
         output.println(message);
     }
 
     private static void logConnection(String adrressIP) throws IOException {
-        
+        var filePath = "logs.txt";
+        try{
+            File file = new File(filePath);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            FileWriter writer = new FileWriter(filePath, true);
+
+            writer.write("IP:"+adrressIP+",Date:"+ Instant.now().toString()  +"\n");
+
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao salvar o log: " + adrressIP);
+        }
+
     }
 }

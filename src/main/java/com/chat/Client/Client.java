@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
 public class Client {
 
     static String userName;
+    static Scanner input;
+    static PrintStream output;
+    static DataInputStream inputStream;
 
     public static void main(String[] args) {
         final String SERVER = "localhost";
@@ -23,15 +26,16 @@ public class Client {
             Socket socket = new Socket(SERVER, SERVER_PORT);
             System.out.println("Conectado ao servidor");
 
-            Scanner input = new Scanner(socket.getInputStream());
-            PrintStream output = new PrintStream(socket.getOutputStream());
+            input = new Scanner(socket.getInputStream());
+            inputStream = new DataInputStream(socket.getInputStream());
+            output = new PrintStream(socket.getOutputStream());
             Scanner keyboard = new Scanner(System.in);
 
             userName = getUserName(keyboard);
 
             output.println(userName);
 
-            Thread threadReceiver = new Thread(() -> receiveMessages(input));
+            Thread threadReceiver = new Thread(Client::receiveMessages);
             threadReceiver.start();
 
             while (true) {
@@ -57,7 +61,7 @@ public class Client {
             keyboard.close();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao conectar ao servidor. Tente novamente.");
         }
     }
 
@@ -66,7 +70,7 @@ public class Client {
         return keyboard.nextLine();
     }
 
-    private static void receiveMessages(Scanner input) {
+    private static void receiveMessages() {
         while (input.hasNextLine()) {
             try{
                 String message = input.nextLine();
@@ -100,7 +104,6 @@ public class Client {
             fileExtension = fileName.substring(lastDotIndex + 1);
         }
 
-        // Obtendo o nome do arquivo sem a extensão
         String fileNameWithoutExtension = fileName;
         if (!fileExtension.isEmpty()) {
             fileNameWithoutExtension = fileName.substring(0, lastDotIndex);
@@ -111,7 +114,7 @@ public class Client {
     }
 
     private static void receiveFile(String message) throws IOException {
-        String[] partes = message.split("><");//<nome><extensao><conteudo>
+        String[] partes = message.split("><");
 
         String nomeArquivo = partes[0].replace("<", "");
         String extensao = partes[1];
@@ -139,5 +142,5 @@ public class Client {
         }
         return file;
     }
-    
+
 }
